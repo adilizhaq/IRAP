@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  background-color: #070611;
+  color: #ffffff;
+}
+
+/* Custom Smooth Curved Entrance Animation */
+.animate-sidebar-enter {
+  /* The cubic-bezier here is the magic that gives it that curved, spring-like settlement */
+  animation: slideInCurved 1.75s cubic-bezier(0.2, 1.2, 0.3, 1) forwards;
+}
+
+@keyframes slideInCurved {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Custom Staggered Slide-Down Animation for Stats */
+.animate-stats-enter {
+  opacity: 0; /* Keeps them invisible until their delay timer hits */
+  /* Using the same bouncy cubic-bezier curve */
+  animation: slideDownCurved 1.75s cubic-bezier(0.2, 1.2, 0.3, 1) forwards;
+}
+
+@keyframes slideDownCurved {
+  0% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

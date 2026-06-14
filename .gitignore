@@ -1,0 +1,11 @@
+# Protect the backend
+server/node_modules/
+
+# Protect any root-level dependencies (if you ever add them)
+node_modules/
+
+# Protect all secret environment variables everywhere in the project
+.env
+.env.*
+# Ignore large media files
+client/public/*.mp4
