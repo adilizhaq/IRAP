@@ -103,7 +103,7 @@ export const TelemetryProvider = ({ children }) => {
     const dwellTimer = setInterval(() => {
       if (!currentlyVisibleRef.current) return;
       addEvent("dwell", currentlyVisibleRef.current, { duration: 100 });
-    }, 100);
+    }, 1000);
     return () => clearInterval(dwellTimer);
   }, [activeTime, isTracking]); // Add isTracking to dependencies
 

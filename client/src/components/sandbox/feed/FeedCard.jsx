@@ -24,15 +24,20 @@ export default function FeedCard({ item, state, onMouseEnter, onMouseLeave, onAc
   
   // 3. Create a reference to this specific DOM element
   const cardRef = useRef(null);
+  const hasBeenViewedRef = useRef(false);
 
   // 4. INTERSECTION OBSERVER (The "Eyes" of the Sensor)
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         // If at least 60% of this card is on the screen...
-        if (entry.isIntersecting) {
-          handleView(item.category); // Tell the brain what they are looking at!
-        }
+        if (
+  entry.isIntersecting &&
+  !hasBeenViewedRef.current
+) {
+  hasBeenViewedRef.current = true;
+  handleView(item.category);
+}
       },
       { 
         threshold: 0.6, // 60% visibility required to trigger a "view"

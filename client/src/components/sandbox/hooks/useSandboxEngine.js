@@ -253,42 +253,69 @@ export default function useSandboxEngine(onSessionComplete) {
   // Identical to original: 4-stage text animation over 4 seconds, then
   // assembles the session payload and calls onSessionComplete.
   const handleCompile = () => {
-    setIsCompiling(true);
 
-    setTimeout(() => setCompileText('Calculating Dwell Heatmaps...'),        800);
-    setTimeout(() => setCompileText('Parsing Attention Drift Vectors...'),   1600);
-    setTimeout(() => setCompileText('Synthesizing Psychometric Profile...'), 2400);
-    setTimeout(() => setCompileText('Finalizing Transparency Dashboard...'), 3200);
+  // Count actual telemetry interactions
+  const totalInteractions = Object.values(metrics).reduce(
+    (sum, m) =>
+      sum +
+      (m.views || 0) +
+      (m.clicks || 0) +
+      (m.saves || 0) +
+      (m.likes || 0) +
+      (m.reads || 0),
+    0
+  );
 
-    setTimeout(() => {
-      const totalInteractions = Object.values(metrics).reduce(
-        (sum, m) => sum + m.views + (m.clicks || 0) + m.saves + m.likes + m.reads,
-        0
-      );
+  // Prevent analysis with no data
+  if (totalInteractions === 0) {
+    alert(
+      "No telemetry collected. Interact with content before generating a behavioral profile."
+    );
+    return;
+  }
 
-      const dwellMap = Object.keys(metrics).reduce(
-        (acc, cat) => ({ ...acc, [cat]: metrics[cat].score }),
-        {}
-      );
+  setIsCompiling(true);
 
-      const payload = {
-        stats: {
-          activeTime:     `${Math.floor(activeTime / 60)}m ${activeTime % 60}s`,
-          scrollDepth:    100,
-          interactions:   totalInteractions,
-          nodesCaptured:  CONTENT_DATABASE.length,
-        },
-        dwellData:        dwellMap,
-        dominantInterest: dominantCategory
-          ? dominantCategory.charAt(0).toUpperCase() + dominantCategory.slice(1)
-          : 'Unknown',
-        rawLogs:          logs,
-        engagementGraph:  Array.from({ length: 7 }, () => Math.floor(Math.random() * 40) + 40),
-      };
+  setTimeout(() => setCompileText('Calculating Dwell Heatmaps...'), 800);
+  setTimeout(() => setCompileText('Parsing Attention Drift Vectors...'), 1600);
+  setTimeout(() => setCompileText('Synthesizing Psychometric Profile...'), 2400);
+  setTimeout(() => setCompileText('Finalizing Transparency Dashboard...'), 3200);
 
-      onSessionComplete(payload);
-    }, 4000);
-  };
+  setTimeout(() => {
+
+    const dwellMap = Object.keys(metrics).reduce(
+      (acc, cat) => ({
+        ...acc,
+        [cat]: metrics[cat].score || 0
+      }),
+      {}
+    );
+
+    const payload = {
+      stats: {
+        activeTime: `${Math.floor(activeTime / 60)}m ${activeTime % 60}s`,
+        scrollDepth: totalInteractions > 0 ? 100 : 0,
+        interactions: totalInteractions,
+        nodesCaptured: totalInteractions,
+      },
+
+      dwellData: dwellMap,
+
+      dominantInterest: dominantCategory
+        ? dominantCategory.charAt(0).toUpperCase() +
+          dominantCategory.slice(1)
+        : "No dominant interest detected",
+
+      rawLogs: logs,
+
+      // Temporary honest graph until real telemetry graph is built
+      engagementGraph: [0, 0, 0, 0, 0, 0, 0],
+    };
+
+    onSessionComplete(payload);
+
+  }, 4000);
+};
 
   // ── Public API ────────────────────────────────────────────────────────────
   return {

@@ -40,6 +40,8 @@ export default function StatsRow({ sessionData }) {
   const activeTime = sessionData?.activeTime || 0;
   const scores = sessionData?.interestScores || {};
 
+  console.log("📊 StatsRow Session Data:", sessionData);
+
   // --- SCROLL REVEAL LOGIC ---
   const [isVisible, setIsVisible] = useState(false);
   const rowRef = useRef(null);
@@ -63,6 +65,8 @@ export default function StatsRow({ sessionData }) {
   const nodesCaptured = signals.totalEvents || 0;
   const dwellString = formatTime(activeTime);
   const contentEvaluated = signals.totalViews || 0;
+
+  const hasTelemetry = nodesCaptured > 0;
   
   // Micro-interactions = Everything that isn't a passive view
   const microInteractions = (signals.totalLikes || 0) + 
@@ -71,13 +75,16 @@ export default function StatsRow({ sessionData }) {
                             (signals.totalDislikes || 0);
 
   // Find the category with the highest score
-  let dominantTag = "ANALYZING...";
+  let dominantTag = "NO DATA";
   if (Object.keys(scores).length > 0) {
-    const topCategory = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
-    if (scores[topCategory] > 0) {
-      dominantTag = topCategory.replace('_', ' ').toUpperCase();
-    }
+  const topCategory = Object.keys(scores).reduce((a, b) =>
+    scores[a] > scores[b] ? a : b
+  );
+
+  if (scores[topCategory] > 0) {
+    dominantTag = topCategory.replace('_', ' ').toUpperCase();
   }
+}
 
   // --- LIVE SIMULATOR ENGINE FOR SPARKLINE ANIMATIONS ---
   const fallbackGraph = [20, 25, 22, 30, 28, 35, 32];
@@ -113,27 +120,37 @@ export default function StatsRow({ sessionData }) {
     { 
       label: "Telemetry Nodes", value: nodesCaptured.toLocaleString(), increase: "CAPTURED", icon: <Activity size={16} />, 
       color: "text-blue-400", hex: "#3b82f6", bg: "bg-blue-500/10", border: "group-hover:border-blue-500/30",
-      path: generateSmoothPath(chartData.events)
+      path:  hasTelemetry
+  ? generateSmoothPath(chartData.events)
+  : ""
     },
     { 
       label: "Session Dwell", value: dwellString, increase: "TRACKED", icon: <Clock size={16} />, 
       color: "text-purple-400", hex: "#a855f7", bg: "bg-purple-500/10", border: "group-hover:border-purple-500/30",
-      path: generateSmoothPath(chartData.time)
+      path: hasTelemetry
+  ? generateSmoothPath(chartData.time)
+  : ""
     },
     { 
       label: "Primary Focus", value: dominantTag, increase: "CONFIRMED", icon: <Crosshair size={16} />, 
       color: "text-emerald-400", hex: "#10b981", bg: "bg-emerald-500/10", border: "group-hover:border-emerald-500/30",
-      path: generateSmoothPath(chartData.focus)
+      path: hasTelemetry
+  ? generateSmoothPath(chartData.focus)
+  : ""
     },
     { 
       label: "Micro-Interactions", value: microInteractions.toLocaleString(), increase: "LOGGED", icon: <MousePointerClick size={16} />, 
       color: "text-orange-400", hex: "#f97316", bg: "bg-orange-500/10", border: "group-hover:border-orange-500/30",
-      path: generateSmoothPath(chartData.interactions)
+      path: hasTelemetry
+  ? generateSmoothPath(chartData.interactions)
+  : ""
     },
     { 
       label: "Content Evaluated", value: contentEvaluated.toLocaleString(), increase: "ANALYZED", icon: <Target size={16} />, 
       color: "text-pink-400", hex: "#ec4899", bg: "bg-pink-500/10", border: "group-hover:border-pink-500/30",
-      path: generateSmoothPath(chartData.depth)
+      path: hasTelemetry
+  ? generateSmoothPath(chartData.depth)
+  : ""
     },
   ];
 

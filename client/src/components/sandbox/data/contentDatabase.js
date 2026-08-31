@@ -90,7 +90,7 @@ export const CONTENT_DATABASE = [
       overlay: 'Analog Hall Effect Switches',
     },
   },
-  
+  {
     id: 'post_05',
     category: 'productivity',
     type: 'story',
