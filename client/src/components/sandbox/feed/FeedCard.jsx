@@ -1,47 +1,52 @@
-import React, { useRef, useEffect } from 'react';
-import { Heart, Bookmark, ThumbsDown } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import {
+  Heart,
+  Bookmark,
+  ThumbsDown,
+  MoreHorizontal,
+  MessageCircle,
+  Sparkles
+} from 'lucide-react';
 import CardBody from './CardBody';
 
 // 🧠 1. IMPORT THE TELEMETRY SENSOR
 import { useTelemetry } from '../../../hooks/TelemetryContext';
 
-const COLOR_MAP = {
-  blue:    'text-blue-400 bg-blue-500/10 border-blue-500/30 hover:border-blue-500/60',
-  purple:  'text-purple-400 bg-purple-500/10 border-purple-500/30 hover:border-purple-500/60',
-  orange:  'text-orange-400 bg-orange-500/10 border-orange-500/30 hover:border-orange-500/60',
-  emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/60',
-  teal:    'text-teal-400 bg-teal-500/10 border-teal-500/30 hover:border-teal-500/60',
-  rose:    'text-rose-400 bg-rose-500/10 border-rose-500/30 hover:border-rose-500/60',
-  red:     'text-red-400 bg-red-500/10 border-red-500/30 hover:border-red-500/60',
-  amber:   'text-amber-400 bg-amber-500/10 border-amber-500/30 hover:border-amber-500/60',
+const RING_MAP = {
+  blue:    'from-blue-500 via-cyan-400 to-indigo-600',
+  purple:  'from-purple-500 via-fuchsia-500 to-pink-500',
+  orange:  'from-amber-400 via-orange-500 to-red-500',
+  emerald: 'from-emerald-400 via-teal-500 to-cyan-500',
+  teal:    'from-teal-400 via-emerald-500 to-blue-500',
+  rose:    'from-amber-400 via-rose-500 to-fuchsia-600',
+  red:     'from-red-500 via-orange-500 to-amber-500',
+  amber:   'from-yellow-400 via-amber-500 to-orange-600',
 };
 
-const getColor = (color) => COLOR_MAP[color] || COLOR_MAP.blue;
+const getRingGradient = (color) => RING_MAP[color] || RING_MAP.rose;
 
 export default function FeedCard({ item, state, onMouseEnter, onMouseLeave, onAction }) {
   // 🧠 2. GRAB TELEMETRY FUNCTIONS FROM THE BRAIN
-  const { handleView, handleHover, handleAction: trackAction } = useTelemetry();
-  
-  // 3. Create a reference to this specific DOM element
+  const { handleView, handleHover, handleTouch, handleAction: trackAction } = useTelemetry();
+
   const cardRef = useRef(null);
   const hasBeenViewedRef = useRef(false);
+  const [showHeartBurst, setShowHeartBurst] = useState(false);
 
-  // 4. INTERSECTION OBSERVER (The "Eyes" of the Sensor)
+  // Deterministic baseline like count per post
+  const baseLikes = (item.id.charCodeAt(item.id.length - 1) * 37) + 124;
+  const totalLikes = state.liked ? baseLikes + 1 : baseLikes;
+
+  // 3. INTERSECTION OBSERVER (60% visibility triggers a view)
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // If at least 60% of this card is on the screen...
-        if (
-  entry.isIntersecting &&
-  !hasBeenViewedRef.current
-) {
-  hasBeenViewedRef.current = true;
-  handleView(item.category);
-}
+        if (entry.isIntersecting && !hasBeenViewedRef.current) {
+          hasBeenViewedRef.current = true;
+          handleView(item.category);
+        }
       },
-      { 
-        threshold: 0.6, // 60% visibility required to trigger a "view"
-      }
+      { threshold: 0.6 }
     );
 
     if (cardRef.current) {
@@ -51,83 +56,177 @@ export default function FeedCard({ item, state, onMouseEnter, onMouseLeave, onAc
     return () => observer.disconnect();
   }, [item.category, handleView]);
 
-  // 5. WRAPPER FUNCTIONS (Fires telemetry + original UI updates)
+  // 4. TELEMETRY + UI WRAPPERS
   const handleCardHover = () => {
     handleHover(item.category);
-    if (onMouseEnter) onMouseEnter(); // Keep original props working
+    if (onMouseEnter) onMouseEnter();
+  };
+
+  const handleCardTouch = () => {
+    if (handleTouch) handleTouch(item.category, 'tap');
+    if (onMouseEnter) onMouseEnter();
   };
 
   const handleInteraction = (actionType) => {
-    trackAction(actionType, item.category); // Log it to the brain
-    if (onAction) onAction(actionType);     // Update the local UI (pink hearts, etc.)
+    trackAction(actionType, item.category);
+    if (onAction) onAction(actionType);
+  };
+
+  // 5. INSTAGRAM DOUBLE-TAP TO LIKE
+  const handleDoubleTap = () => {
+    setShowHeartBurst(true);
+    if (!state.liked) {
+      handleInteraction('like');
+    }
+    setTimeout(() => setShowHeartBurst(false), 850);
   };
 
   return (
-    <div
-      ref={cardRef} // Attach the observer here!
+    <article
+      ref={cardRef}
       onMouseEnter={handleCardHover}
       onMouseLeave={onMouseLeave}
-      className="bg-[#080614] border border-slate-800/80 hover:border-slate-600/80 rounded-2xl p-6 transition-all duration-500 shadow-sm"
+      onTouchStart={handleCardTouch}
+      className="bg-[#050509] border border-slate-800/70 hover:border-slate-700/80 rounded-2xl overflow-hidden transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.45)]"
     >
-      {/* ── HEADER ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-4 mb-5">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${getColor(item.color)}`}>
-          <item.icon size={18} />
-        </div>
-        <div>
-          <p className="text-[15px] font-bold text-slate-100">{item.title}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-[11px] font-medium text-slate-500">{item.subtitle}</span>
-            <span className="text-slate-700">•</span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.difficulty}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── BODY (type-switched content + expand button) ─────────────────── */}
-      <CardBody
-        item={item}
-        state={state}
-        onAction={handleInteraction} // Use wrapped handler for expands/clicks inside body
-      />
-
-      {/* ── ACTION BAR ──────────────────────────────────────────────────── */}
-      <div className="mt-5 pt-4 border-t border-slate-800/60 flex items-center justify-between">
+      {/* ── 1. INSTAGRAM HEADER ─────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleInteraction('like')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold transition-all ${
-              state.liked
-                ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
-                : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent'
-            }`}
-          >
-            <Heart size={16} className={state.liked ? 'fill-current' : ''} />
-            {state.liked ? 'Liked' : 'Like'}
-          </button>
+          {/* Gradient Story Ring */}
+          <div className={`p-[2px] rounded-full bg-gradient-to-tr ${getRingGradient(item.color)}`}>
+            <div className="w-8 h-8 rounded-full bg-[#080614] flex items-center justify-center text-white border-2 border-[#050509]">
+              <item.icon size={15} />
+            </div>
+          </div>
 
-          <button
-            onClick={() => handleInteraction('save')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold transition-all ${
-              state.saved
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent'
-            }`}
-          >
-            <Bookmark size={16} className={state.saved ? 'fill-current' : ''} />
-            {state.saved ? 'Saved' : 'Save'}
-          </button>
+          <div className="leading-tight">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[13px] font-bold text-slate-100 tracking-tight">
+                {item.category.toLowerCase()}_hub
+              </span>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-800/90 text-slate-300 uppercase tracking-wider">
+                {item.difficulty}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">{item.subtitle}</p>
+          </div>
         </div>
 
         <button
           onClick={() => handleInteraction('dislike')}
-          title="Not Interested"
-          className="px-4 py-2 text-slate-500 hover:text-red-400 bg-slate-800/20 hover:bg-red-500/10 rounded-xl transition-colors flex items-center gap-2 text-[12px] font-bold"
+          title="Hide / Pass Post"
+          className="text-slate-500 hover:text-slate-300 p-1 rounded-lg transition-colors"
         >
-          <ThumbsDown size={14} />
-          <span className="hidden sm:inline">Pass</span>
+          <MoreHorizontal size={18} />
         </button>
       </div>
-    </div>
+
+      {/* ── 2. FULL-BLEED MEDIA CONTAINER (Double-Click to Like) ────────── */}
+      <div
+        onDoubleClick={handleDoubleTap}
+        className="relative w-full bg-[#090812] border-y border-slate-900 select-none overflow-hidden"
+      >
+        <CardBody
+          item={item}
+          state={state}
+          onAction={handleInteraction}
+        />
+
+        {/* Floating Heart Burst on Double-Tap */}
+        {showHeartBurst && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 bg-black/10">
+            <Heart
+              size={84}
+              className="text-rose-500 fill-rose-500 drop-shadow-[0_0_25px_rgba(244,63,94,0.8)] animate-ping"
+              style={{ animationDuration: '600ms', animationIterationCount: 1 }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* ── 3. INSTAGRAM ACTION BAR ─────────────────────────────────────── */}
+      <div className="px-4 pt-3 pb-4">
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-4">
+            {/* Like Button */}
+            <button
+              onClick={() => handleInteraction('like')}
+              className="group flex items-center gap-1.5 focus:outline-none transition-transform active:scale-125"
+            >
+              <Heart
+                size={23}
+                className={`transition-colors ${
+                  state.liked
+                    ? 'text-rose-500 fill-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.4)]'
+                    : 'text-slate-200 hover:text-slate-400'
+                }`}
+              />
+            </button>
+
+            {/* Expand / Inspect Button */}
+            <button
+              onClick={() => handleInteraction('expand')}
+              title="Expand Details"
+              className="text-slate-200 hover:text-slate-400 transition-transform active:scale-110"
+            >
+              <MessageCircle size={22} />
+            </button>
+
+            {/* Pass / Not Interested Button */}
+            <button
+              onClick={() => handleInteraction('dislike')}
+              title="Not Interested"
+              className="text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1 text-[11px] font-semibold"
+            >
+              <ThumbsDown size={19} />
+            </button>
+          </div>
+
+          {/* Save / Bookmark Button (Pinned Right) */}
+          <button
+            onClick={() => handleInteraction('save')}
+            className="transition-transform active:scale-125 focus:outline-none"
+          >
+            <Bookmark
+              size={22}
+              className={`transition-colors ${
+                state.saved
+                  ? 'text-emerald-400 fill-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.4)]'
+                  : 'text-slate-200 hover:text-slate-400'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* ── 4. LIKES & LIVE TELEMETRY PILL ────────────────────────────── */}
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-[12px] font-bold text-slate-100">
+            {totalLikes.toLocaleString()} likes
+          </p>
+
+          {(state.liked || state.saved || state.expanded) && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
+              <Sparkles size={10} />
+              Signal Logged
+            </span>
+          )}
+        </div>
+
+        {/* ── 5. INSTAGRAM CAPTION ──────────────────────────────────────── */}
+        <div className="text-[13px] text-slate-200 leading-snug">
+          <span className="font-bold text-white mr-2">
+            {item.category.toLowerCase()}_hub
+          </span>
+          <span className="text-slate-300 font-medium">{item.title}</span>
+        </div>
+
+        {/* Subtle Category Hashtags */}
+        <div className="mt-1.5 flex items-center gap-2 text-[11px] text-blue-400/80 font-medium">
+          <span>#{item.category.toLowerCase()}</span>
+          <span>#{item.type.toLowerCase()}</span>
+          <span>#irap</span>
+        </div>
+      </div>
+    </article>
   );
 }

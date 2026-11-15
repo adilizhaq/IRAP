@@ -1,83 +1,82 @@
 import React from 'react';
-import { Share2, ChevronRight, ScanFace } from 'lucide-react';
+import { Share2, ChevronRight } from 'lucide-react';
 
-// ============================================================================
-// TimelinePanel
-// ----------------------------------------------------------------------------
-// The bottom-of-feed panel showing:
-//   1. Attention drift tracker — chronological path of dominant category shifts
-//   2. Event log timeline — every scored interaction with timestamp + points
-//   3. "Analyze Profile" button — triggers the compile sequence
-//
-// Props:
-//   timeline        — array    full event log from useSandboxEngine
-//   attentionShifts — array    chronological dominant-category shift path
-//   onCompile       — () => void   fires engine.handleCompile()
-// ============================================================================
-
-export default function TimelinePanel({ timeline, attentionShifts, onCompile }) {
+export default function TimelinePanel({ timeline = [], attentionShifts = [], onCompile }) {
   return (
-    <div
-      className="mt-8 bg-gradient-to-br from-[#080614] to-[#040308] border border-slate-800 rounded-2xl p-8 shadow-2xl"
-    >
-      {/* ── HEADER ──────────────────────────────────────────────────────── */}
-      <h3 className="text-base font-black text-white tracking-widest uppercase mb-6 flex items-center gap-2 border-b border-slate-800 pb-4">
-        <Share2 size={18} className="text-blue-400" />
-        Attention Journey Timeline
+    <div className="bg-[#080614] border border-slate-800 rounded-2xl p-6">
+      <h3 className="text-sm font-black text-white tracking-widest uppercase mb-6 flex items-center gap-2 border-b border-slate-800 pb-4">
+        <Share2 size={16} className="text-purple-400" />
+        Attention Drift Analysis
       </h3>
 
-      {/* ── DRIFT TRACKER ───────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2 mb-8">
-        {attentionShifts.length > 0
-          ? attentionShifts.map((cat, i) => (
+        {attentionShifts.length > 0 ? (
+          attentionShifts.map((shift, i) => {
+            // Safely handle both string categories and { from, to } objects
+            const label =
+              typeof shift === 'object' && shift !== null
+                ? shift.to || shift.from || 'unknown'
+                : String(shift);
+
+            return (
               <React.Fragment key={i}>
                 <span className="bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 uppercase tracking-wider shadow-inner">
-                  {cat}
+                  {label}
                 </span>
                 {i < attentionShifts.length - 1 && (
                   <ChevronRight size={14} className="text-slate-600" />
                 )}
               </React.Fragment>
-            ))
-          : (
-            <span className="text-sm text-slate-500 font-mono italic">
-              Interact with content above to map your journey...
-            </span>
-          )}
+            );
+          })
+        ) : (
+          <span className="text-xs text-slate-500 font-mono">
+            Gathering telemetry...
+          </span>
+        )}
       </div>
 
-      {/* ── EVENT LOG ───────────────────────────────────────────────────── */}
-      <div className="space-y-4 max-h-[200px] overflow-y-auto hide-scroll pr-2">
-        {timeline.map((event, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-4 text-xs font-mono bg-slate-900/40 p-2.5 rounded-lg border border-slate-800/50"
-          >
-            <span className="text-slate-500">{event.time}</span>
+      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">
+        Your Interaction Journey
+      </h4>
 
-            <span className={`px-2 py-0.5 rounded-md border text-[9px] uppercase font-bold tracking-widest ${
-              event.event === 'save'     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-              event.event === 'like'     ? 'bg-pink-500/10 text-pink-400 border-pink-500/20'          :
-              event.event === 'readMore' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'          :
-              event.event === 'view'     ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'    :
-              'bg-slate-800 text-slate-400 border-slate-700'
-            }`}>
+      <div className="space-y-3 h-[150px] overflow-y-auto hide-scroll">
+        {timeline.map((event, i) => (
+          <div key={i} className="flex items-center gap-4 text-xs font-mono">
+            <span className="text-slate-600">{event.time}</span>
+            <span
+              className={`px-2 py-0.5 rounded border text-[9px] uppercase font-bold tracking-widest ${
+                event.event === 'save'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                  : event.event === 'like'
+                  ? 'bg-pink-500/10 text-pink-400 border-pink-500/20'
+                  : event.event === 'readMore' || event.event === 'expand'
+                  ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  : event.event === 'view'
+                  ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}
+            >
               {event.event}
             </span>
-
-            <span className="text-slate-200 font-sans font-bold capitalize">{event.category}</span>
-            <span className="text-slate-500 ml-auto border-l border-slate-700 pl-3">{event.score} pts</span>
+            <span className="text-slate-300 font-sans font-bold capitalize">
+              {event.category}
+            </span>
+            {event.score !== undefined && (
+              <span className="text-slate-500 ml-auto">{event.score} pts</span>
+            )}
           </div>
         ))}
       </div>
 
-      {/* ── ANALYZE BUTTON ──────────────────────────────────────────────── */}
-      <button
-        onClick={onCompile}
-        className="mt-8 w-full py-4 bg-white hover:bg-slate-200 text-black font-black tracking-widest uppercase rounded-xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center gap-2"
-      >
-        <ScanFace size={18} /> Analyze Profile
-      </button>
+      {onCompile && (
+        <button
+          onClick={onCompile}
+          className="mt-8 w-full py-4 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-black tracking-widest uppercase rounded-xl transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)]"
+        >
+          Compile Subconscious Profile
+        </button>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Sparkles, Layers, Radio, X } from 'lucide-react';
 
 // Engine
 import useSandboxEngine from './hooks/useSandboxEngine';
@@ -16,23 +17,43 @@ import AttentionPanel from './panels/AttentionPanel';
 import TimelinePanel  from './panels/TimelinePanel';
 
 // Data
-import { CONTENT_DATABASE } from './data/contentDatabase';
+import { CONTENT_DATABASE, STORY_ITEMS } from './data/contentDatabase';
 
 // 🧠 Hook
 import { useTelemetry } from '../../hooks/TelemetryContext';
 
+const STORY_RING_MAP = {
+  blue:    'from-blue-500 via-cyan-400 to-indigo-600',
+  purple:  'from-purple-500 via-fuchsia-500 to-pink-500',
+  orange:  'from-amber-400 via-orange-500 to-red-500',
+  emerald: 'from-emerald-400 via-teal-500 to-cyan-500',
+  teal:    'from-teal-400 via-emerald-500 to-blue-500',
+  rose:    'from-amber-400 via-rose-500 to-fuchsia-600',
+  red:     'from-red-500 via-orange-500 to-amber-500',
+  amber:   'from-yellow-400 via-amber-500 to-orange-600',
+};
+
 export default function SandboxView({ onSessionComplete }) {
-
-  const { resumeTracking, pauseTracking } = useTelemetry();
-
-  useEffect(() => {
-    resumeTracking(); 
-    return () => {
-      pauseTracking(); 
-    };
-  }, [resumeTracking, pauseTracking]);
-
+  const { resumeTracking, pauseTracking, handleTouch, activeTime } = useTelemetry();
   const engine = useSandboxEngine(onSessionComplete);
+
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Ensure one unique story ring per category even if STORY_ITEMS is not exported
+  const storyNodes = useMemo(() => {
+    if (STORY_ITEMS && STORY_ITEMS.length > 0) return STORY_ITEMS;
+    return [...new Map(CONTENT_DATABASE.map((item) => [item.category, item])).values()];
+  }, []);
+
+  // 🛑 Only run global telemetry timers when inside the active feed
+  useEffect(() => {
+    if (engine.isStarted && !engine.isCompiling) {
+      resumeTracking();
+    } else {
+      pauseTracking();
+    }
+    return () => pauseTracking();
+  }, [engine.isStarted, engine.isCompiling, resumeTracking, pauseTracking]);
 
   // ── 1. COMPILING SCREEN ───────────────────────────────────────────────────
   if (engine.isCompiling) {
@@ -44,6 +65,30 @@ export default function SandboxView({ onSessionComplete }) {
     return <WelcomeScreen onStart={() => engine.setIsStarted(true)} />;
   }
 
+  // Filter visible posts (excluding disliked ones and applying Story filter)
+  const visiblePosts = CONTENT_DATABASE.filter((item) => {
+    const state = engine.postState[item.id];
+    if (state?.disliked) return false;
+    if (selectedCategory !== 'all' && item.category !== selectedCategory) return false;
+    return true;
+  });
+
+  const handleStorySelect = (category, id) => {
+    const nextCategory = selectedCategory === category ? 'all' : category;
+    setSelectedCategory(nextCategory);
+
+    if (nextCategory !== 'all') {
+      engine.handleMouseEnter(category, id);
+      if (handleTouch) handleTouch(category, 'tap');
+    }
+  };
+
+  const formatTimer = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
   // ── 3. MAIN FEED ──────────────────────────────────────────────────────────
   return (
     <>
@@ -53,28 +98,39 @@ export default function SandboxView({ onSessionComplete }) {
       `}</style>
 
       {/* Main Container - Full height, no outer scroll */}
-      <div className="flex flex-col h-full w-full bg-[#040308] text-white font-sans overflow-hidden animate-in fade-in duration-1000">
+      <div className="flex flex-col h-full w-full bg-[#030207] text-white font-sans overflow-hidden animate-in fade-in duration-700">
 
-        {/* ── FIXED TOP BAR (Like Instagram's Header) ─────────────────────── */}
-        <div className="h-16 w-full border-b border-slate-800/60 bg-[#040308]/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-50">
+        {/* ── FIXED TOP BAR (Instagram Dark Header) ───────────────────────── */}
+        <header className="h-16 w-full border-b border-slate-800/60 bg-[#040308]/90 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shrink-0 z-50">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-              Simulation Feed
+            <h1 className="text-lg sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-purple-300 tracking-tight">
+              IRAPgram
             </h1>
-            <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold uppercase tracking-widest animate-pulse">
-              Live
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              {formatTimer(activeTime || engine.activeTime || 0)}
             </span>
           </div>
 
-          {/* 🎯 THE NEW FIXED COMPILE BUTTON */}
-          <button
-            onClick={engine.handleCompile}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] flex items-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-            Analyze Profile
-          </button>
-        </div>
+          <div className="flex items-center gap-3">
+            {/* Dominant Affinity Pill */}
+            {engine.dominantCategory && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-[11px] font-mono text-purple-300">
+                <Radio size={12} className="text-purple-400 animate-pulse" />
+                <span>Lock: <b className="uppercase text-white">{engine.dominantCategory}</b></span>
+              </div>
+            )}
+
+            {/* Compile Button */}
+            <button
+              onClick={engine.handleCompile}
+              className="bg-gradient-to-r from-rose-500 via-purple-600 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white px-4 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all shadow-[0_0_20px_rgba(168,85,247,0.35)] hover:shadow-[0_0_30px_rgba(168,85,247,0.55)] active:scale-95 flex items-center gap-2"
+            >
+              <Sparkles size={15} />
+              <span>Analyze Profile</span>
+            </button>
+          </div>
+        </header>
 
         {/* ── CONTENT AREA ────────────────────────────────────────────────── */}
         <div className="flex-1 flex justify-center w-full overflow-hidden relative">
@@ -82,48 +138,138 @@ export default function SandboxView({ onSessionComplete }) {
 
           {/* CENTER COLUMN: Dense Feed Scroll Area */}
           <div className="flex-1 w-full max-w-[650px] h-full overflow-y-auto hide-scroll scroll-smooth relative z-10 border-r border-slate-800/40">
-            
-            {/* Tighter wrapper for the IG feel (470px max-width) */}
-            <div className="py-6 px-4 sm:px-0 flex flex-col gap-6 w-full max-w-[470px] mx-auto pb-32">
-              
-              <p className="text-[12px] text-slate-500 font-medium text-center mb-2">
-                Interact genuinely. The engine is observing your decisions.
-              </p>
 
-              {/* Feed loop */}
-              {CONTENT_DATABASE.map((item, index) => {
-                const state = engine.postState[item.id];
-                if (state.disliked) return null;
+            {/* 470px Instagram Desktop Feed Container */}
+            <div className="py-4 px-2 sm:px-0 flex flex-col gap-5 w-full max-w-[470px] mx-auto pb-32">
 
-                return (
-                  <React.Fragment key={item.id}>
-                    {index === 4 && engine.dominantCategory && engine.activeTime > 10 && (
-                      <div className="my-2">
-                        <RecommendationInject
-                          dominantCategory={engine.dominantCategory}
-                          metrics={engine.metrics}
-                        />
+              {/* ── INSTAGRAM STORIES CATEGORY TRAY ───────────────────────── */}
+              <div className="bg-[#050509] border border-slate-800/70 rounded-2xl p-3.5 overflow-x-auto hide-scroll">
+                <div className="flex items-center gap-4 min-w-max">
+                  {/* "All" Story Reset Button */}
+                  <button
+                    onClick={() => setSelectedCategory('all')}
+                    className="flex flex-col items-center gap-1.5 group focus:outline-none"
+                  >
+                    <div className={`p-[2.5px] rounded-full transition-transform group-hover:scale-105 ${
+                      selectedCategory === 'all'
+                        ? 'bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600'
+                        : 'bg-slate-800'
+                    }`}>
+                      <div className="w-12 h-12 rounded-full bg-[#090812] flex items-center justify-center text-white border-2 border-[#050509]">
+                        <Layers size={18} className={selectedCategory === 'all' ? 'text-rose-400' : 'text-slate-400'} />
                       </div>
-                    )}
+                    </div>
+                    <span className={`text-[10px] font-semibold tracking-tight ${
+                      selectedCategory === 'all' ? 'text-white font-bold' : 'text-slate-400'
+                    }`}>
+                      For You
+                    </span>
+                  </button>
 
-                    <FeedCard
-                      item={item}
-                      state={state}
-                      onMouseEnter={() => engine.handleMouseEnter(item.category, item.id)}
-                      onMouseLeave={() => engine.handleMouseLeave(item.category)}
-                      onAction={(actionType) => engine.handleAction(item.id, item.category, actionType)}
-                    />
-                  </React.Fragment>
-                );
-              })}
+                  {/* Unique Category Story Rings */}
+                  {storyNodes.map((item) => {
+                    const isSelected = selectedCategory === item.category;
+                    const isDominant = engine.dominantCategory === item.category;
+                    const ringGradient = STORY_RING_MAP[item.color] || STORY_RING_MAP.rose;
 
-               {/* Bottom Timeline Log */}
-              <div className="mt-8 border-t border-slate-800/40 pt-8">
-                 <TimelinePanel
+                    return (
+                      <button
+                        key={item.category}
+                        onClick={() => handleStorySelect(item.category, item.id)}
+                        className="flex flex-col items-center gap-1.5 group focus:outline-none"
+                      >
+                        <div className={`p-[2.5px] rounded-full transition-all duration-300 group-hover:scale-105 ${
+                          isSelected || isDominant
+                            ? `bg-gradient-to-tr ${ringGradient} shadow-[0_0_12px_rgba(236,72,153,0.35)]`
+                            : 'bg-gradient-to-tr from-slate-700 to-slate-800 opacity-80 group-hover:opacity-100'
+                        }`}>
+                          <div className="w-12 h-12 rounded-full bg-[#090812] flex items-center justify-center text-white border-2 border-[#050509]">
+                            <item.icon size={18} />
+                          </div>
+                        </div>
+                        <span className={`text-[10px] capitalize tracking-tight max-w-[60px] truncate ${
+                          isSelected ? 'text-white font-bold' : 'text-slate-400'
+                        }`}>
+                          {item.category}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Active Category Filter Indicator */}
+              {selectedCategory !== 'all' && (
+                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-purple-500/10 border border-purple-500/25 text-xs">
+                  <span className="text-slate-300">
+                    Filtering by <b className="text-white uppercase">{selectedCategory}</b> ({visiblePosts.length} posts)
+                  </span>
+                  <button
+                    onClick={() => setSelectedCategory('all')}
+                    className="text-purple-300 hover:text-white flex items-center gap-1 font-bold text-[11px]"
+                  >
+                    <X size={13} />
+                    Show All
+                  </button>
+                </div>
+              )}
+
+              {/* ── FEED CARDS LOOP ───────────────────────────────────────── */}
+              {visiblePosts.length > 0 ? (
+                visiblePosts.map((item, visibleIndex) => {
+                  const state = engine.postState[item.id] || {
+                    liked: false,
+                    saved: false,
+                    disliked: false,
+                    expanded: false,
+                  };
+
+                  return (
+                    <React.Fragment key={item.id}>
+                      {/* Inject Algorithmic Suggestion after 3rd card */}
+                      {selectedCategory === 'all' &&
+                        visibleIndex === 3 &&
+                        engine.dominantCategory &&
+                        engine.activeTime > 10 && (
+                          <div className="my-1">
+                            <RecommendationInject
+                              dominantCategory={engine.dominantCategory}
+                              metrics={engine.metrics}
+                            />
+                          </div>
+                        )}
+
+                      <FeedCard
+                        item={item}
+                        state={state}
+                        onMouseEnter={() => engine.handleMouseEnter(item.category, item.id)}
+                        onMouseLeave={() => engine.handleMouseLeave(item.category)}
+                        onAction={(actionType) => engine.handleAction(item.id, item.category, actionType)}
+                      />
+                    </React.Fragment>
+                  );
+                })
+              ) : (
+                <div className="bg-[#050509] border border-slate-800/70 rounded-2xl p-8 text-center">
+                  <p className="text-sm font-bold text-slate-300 mb-2">
+                    No active posts remaining in this filter.
+                  </p>
+                  <button
+                    onClick={() => setSelectedCategory('all')}
+                    className="mt-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-colors"
+                  >
+                    Return to For You Feed
+                  </button>
+                </div>
+              )}
+
+              {/* Bottom Timeline Log */}
+              <div className="mt-6 border-t border-slate-800/40 pt-6">
+                <TimelinePanel
                   timeline={engine.timeline}
                   attentionShifts={engine.attentionShifts}
-                  onCompile={engine.handleCompile} 
-                 />
+                  onCompile={engine.handleCompile}
+                />
               </div>
 
             </div>
