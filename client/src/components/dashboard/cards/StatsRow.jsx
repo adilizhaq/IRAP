@@ -157,7 +157,7 @@ export default function StatsRow({ sessionData }) {
   return (
     <div 
       ref={rowRef} 
-      className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 w-full"
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 w-full [&>*:last-child]:col-span-2 md:[&>*:last-child]:col-span-1"
     >
       {stats.map((stat, index) => (
         <div 
@@ -185,7 +185,7 @@ export default function StatsRow({ sessionData }) {
               </span>
               
               <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                <span className="text-sm md:text-sm lg:text-base font-black text-white uppercase tracking-wider leading-none truncate group-hover:text-slate-100 transition-colors duration-500 max-w-[80%]">
+                <span className="text-xs sm:text-sm lg:text-base font-black text-white uppercase tracking-wide lg:tracking-wider leading-none truncate group-hover:text-slate-100 transition-colors duration-500 max-w-full lg:max-w-[80%]">
                   {stat.value}
                 </span>
                 <span className="text-[8px] font-bold text-emerald-400 tracking-wider shrink-0 leading-none">
