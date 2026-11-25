@@ -1,71 +1,181 @@
-# IRAP — Intelligent Recommendation & Attention Profiling
+# IRAP — Intelligent Recommendation & Attention Profiling Platform
 
-A small, browser-only simulation of how a feed turns behavior into a profile, and how recommendations can be explained instead of treated as a black box.
+IRAP (Intelligent Recommendation & Attention Profiling Platform) is an experimental behavioral analytics and recommendation transparency platform that simulates how modern digital platforms collect user interactions, build behavioral profiles, and generate personalized content recommendations.
 
-**The loop:** scroll a feed → telemetry is captured → an interest profile is built → recommendations show *why* they were picked.
+The project was created to explore the relationship between user attention, engagement patterns, recommendation systems, and algorithmic decision-making.
 
-Everything is simulated in the browser. No real user data is collected or sent anywhere.
+---
 
-## Screenshots
+## Overview
 
-| Welcome | Content Sandbox |
-|---|---|
-| ![Welcome](docs/screenshots/1-welcome.png) | ![Sandbox](docs/screenshots/2-sandbox.png) |
+Modern digital platforms continuously analyze user behavior to personalize content feeds, advertisements, and recommendations.
 
-| Dashboard | Recommendations |
-|---|---|
-| ![Dashboard](docs/screenshots/3-dashboard.png) | ![Recommendations](docs/screenshots/4-recommendations.png) |
+IRAP demonstrates this process through an interactive dashboard that:
 
-## Screens
+* Tracks simulated user interactions
+* Generates behavioral profiles
+* Visualizes engagement metrics
+* Simulates recommendation engines
+* Provides transparency into recommendation decisions
+* Exports user profile summaries
 
-| Screen | What it does |
-|---|---|
-| **Content Sandbox** | A short feed of 32 cards across 8 categories. Likes, saves, expands and dwell time are recorded. |
-| **Dashboard** | Live stats, behavior radar, interest scores, engagement trend, recommendation preview. |
-| **Recommendations** | Curated feed where every item shows its match score and the signal that triggered it. |
+The goal is to help users understand how recommendation systems can infer interests, predict preferences, and influence digital experiences.
 
-## Run it
+---
 
-```bash
-cd client
-npm install
-npm run dev
-```
+## Key Features
 
-Build for production with `npm run build`.
+### Behavioral Profiling
 
-## Deploy
+Analyze user interaction patterns and generate dynamic interest scores.
 
-It is a static site, so any static host works.
+### Recommendation Engine Simulation
 
-- **Vercel:** import the repo, set **Root Directory** to `client`. Build settings are picked up from `client/vercel.json`.
-- **Netlify:** import the repo. `netlify.toml` already sets the base folder, build command and publish folder.
+Generate personalized content recommendations based on behavioral signals.
 
-After deploying, add the live link at the top of this README.
+### Explainable Recommendations
 
-## Stack
+Every recommendation includes reasoning and confidence indicators showing why it was selected.
 
-React 19, Vite, Tailwind CSS, Recharts, Framer Motion, Lucide icons.
+### Live Activity Monitoring
 
-## Structure
+Visualize simulated user activity streams and engagement events.
 
-```
-client/src/
-├── App.jsx                     screen switching
-├── hooks/TelemetryContext.jsx  all telemetry state and scoring
-└── components/
-    ├── sandbox/                feed, content data, session engine
-    ├── pages/                  DashboardView, RecommendationsView
-    ├── dashboard/              cards and charts
-    └── shared/                 sidebar, topbar, footer
-```
+### Analytics Dashboard
 
-## Possible next steps
+Interactive dashboard displaying:
 
-- Persist sessions (localStorage first, a backend later)
-- Replace rule-based scoring with a simple learned model
-- Tests for the scoring logic in `TelemetryContext.jsx`
+* Interest Distribution
+* Attention Signals
+* Engagement Metrics
+* Behavioral Trends
+* Recommendation Statistics
+
+### Transparency Layer
+
+Expose internal recommendation logic rather than treating recommendations as a black box.
+
+### User Data Export
+
+Generate downloadable profile summaries and behavioral reports.
+
+---
+
+## Technology Stack
+
+### Frontend
+
+* React
+* Vite
+* JavaScript (ES6+)
+* Tailwind CSS
+
+### Data Visualization
+
+* SVG-based custom charts
+* Dynamic dashboards
+* Interactive UI components
+
+---
+
+## Project Structure
+
+src/
+
+├── components/
+
+│ ├── dashboard/
+
+│ │ ├── cards/
+
+│ │ └── charts/
+
+│ ├── pages/
+
+│ ├── sandbox/
+
+│ └── shared/
+
+├── hooks/
+
+├── assets/
+
+└── App.jsx
+
+---
+
+## Current Modules
+
+### Sandbox
+
+Simulates user interaction sessions and generates telemetry data.
+
+### Dashboard
+
+Central intelligence view displaying behavioral insights and recommendation outputs.
+
+### Analytics
+
+Detailed metrics and engagement analysis.
+
+### Live Activity
+
+Real-time activity stream visualization.
+
+### Behavioral Deep Dive
+
+Advanced behavioral profiling and interest analysis.
+
+### Recommendations
+
+Personalized recommendation simulation with explainability features.
+
+---
+
+## Future Roadmap
+
+* Real recommendation APIs
+* Machine learning based profiling
+* User authentication
+* Historical profile tracking
+* Cross-session analytics
+* Recommendation feedback loops
+* Exportable behavioral reports
+* Explainable AI recommendation visualizations
+
+---
+
+## Learning Objectives
+
+IRAP was built as a learning and research project to explore:
+
+* Recommendation Systems
+* Behavioral Analytics
+* Human-Computer Interaction
+* Explainable AI (XAI)
+* Data Visualization
+* Frontend Engineering
+* User Profiling Systems
+
+---
 
 ## Author
 
 Muhammed Adil M N
+
+Computer Science Engineering Student
+
+Passionate about:
+
+* Artificial Intelligence
+* Data Analytics
+* Software Engineering
+* Human Behavior & Recommendation Systems
+
+---
+
+## Disclaimer
+
+IRAP is an educational and research-oriented simulation platform.
+
+The current implementation uses simulated telemetry and recommendation data for demonstration purposes and does not collect or process real user information.

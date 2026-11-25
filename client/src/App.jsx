@@ -7,7 +7,11 @@ import Topbar from './components/shared/Topbar';
 // --- VIEWS ---
 import SandboxView from './components/sandbox/SandboxView';
 import DashboardView from './components/pages/DashboardView';
+import AnalyticsView from './components/pages/AnalyticsView';
+import LiveActivityView from './components/pages/LiveActivityView';
 import RecommendationsView from './components/pages/recommendations/RecommendationsView';
+import BehavioralDeepDive from './components/pages/BehavioralDeepDive';
+import DigitalProfileView from './components/pages/DigitalProfileView';
 
 // --- HOOKS ---
 import { TelemetryProvider, useTelemetry } from './hooks/TelemetryContext';
@@ -74,10 +78,25 @@ function AppContent() {
             </div>
           )}
 
+          {currentScreen === 'analytics' && <AnalyticsView sessionData={sessionData} />}
+
+          {(currentScreen === 'livestream' || currentScreen === 'live-activity') && (
+            <LiveActivityView sessionData={sessionData} />
+          )}
+
           {currentScreen === 'recommendations' && (
             <RecommendationsView sessionData={sessionData} onNavigate={setCurrentScreen} />
           )}
 
+          {(currentScreen === 'deepdive' || currentScreen === 'behavioral-deep-dive') && (
+            <div className="p-4 md:p-8 h-full">
+              <BehavioralDeepDive sessionData={sessionData} onNavigate={setCurrentScreen} />
+            </div>
+          )}
+
+          {currentScreen === 'digital-profile' && (
+            <DigitalProfileView sessionData={sessionData} onNavigate={setCurrentScreen} />
+            )}
 
         </div>
       </div>
