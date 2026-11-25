@@ -25,6 +25,12 @@ export default function Sidebar({ currentView, onNavigate, onResetData }) {
     { id: "digital-profile", label: "Digital Profile", icon: <Sliders size={18} /> },
   ];
 
+  // Short labels so all 7 destinations fit in the phone tab bar
+  const shortLabel = {
+    sandbox: "Sandbox", dashboard: "Dashboard", livestream: "Live", analytics: "Analytics",
+    deepdive: "Behavior", recommendations: "For You", "digital-profile": "Profile",
+  };
+
   const bottomNav = [
     { id: "settings", label: "Settings", icon: <Settings size={18} /> },
     { id: "about", label: "About IRAP", icon: <HelpCircle size={18} /> },
@@ -44,7 +50,7 @@ export default function Sidebar({ currentView, onNavigate, onResetData }) {
 
       {/* Main Sidebar Container */}
       <div 
-        className={`animate-sidebar-enter h-screen shrink-0 bg-[#0c0a18] border-r border-slate-800/60 select-none relative transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-50 ${
+        className={`hidden md:block animate-sidebar-enter h-screen shrink-0 bg-[#0c0a18] border-r border-slate-800/60 select-none relative transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] z-50 ${
           isCollapsed ? "w-20" : "w-60"
         }`}
       >
@@ -75,6 +81,29 @@ export default function Sidebar({ currentView, onNavigate, onResetData }) {
           </div>
         </div>
       </div>
+
+      {/* Phone navigation: bottom tab bar (the side rail is hidden below md) */}
+      <nav
+        className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-[#0c0a18]/95 backdrop-blur-xl border-t border-slate-800/60 flex px-1 pt-1.5"
+        style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}
+      >
+        {mainNav.map((item) => {
+          const isActive = currentView === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onNavigate(item.id)}
+              aria-label={item.label}
+              className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-1 min-h-[48px] rounded-xl transition-colors ${
+                isActive ? "text-white bg-gradient-to-b from-blue-600/80 to-purple-600/80" : "text-slate-400 active:text-slate-200"
+              }`}
+            >
+              {item.icon}
+              <span className="text-[9.5px] font-semibold leading-none truncate max-w-full">{shortLabel[item.id] || item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
     </>
   );
 }

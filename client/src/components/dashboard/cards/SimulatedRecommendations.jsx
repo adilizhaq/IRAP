@@ -307,7 +307,7 @@ export default function SimulatedRecommendations({ sessionData, onNavigate }) {
         }`}
       >
         {/* INNER CONTENT CARD */}
-        <div className="bg-[#0c0a18] border border-slate-800/60 rounded-2xl p-5 flex flex-col h-[380px] w-full justify-between select-none shadow-xl group hover:border-purple-500/20 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden">
+        <div className="bg-[#0c0a18] border border-slate-800/60 rounded-2xl p-5 flex flex-col h-full w-full justify-between select-none shadow-xl group hover:border-purple-500/20 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden">
           
           {/* Ambient Glow */}
           <div className="absolute top-10 -right-10 w-40 h-40 rounded-full bg-purple-500 blur-[90px] opacity-5 pointer-events-none group-hover:opacity-[0.08] transition-opacity duration-700" />

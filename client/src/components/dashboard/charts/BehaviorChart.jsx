@@ -41,6 +41,20 @@ export default function BehaviorOverview() {
   const center = size / 2;
   const radius = 90;
 
+  // Shrink the radar (and its outer labels) when the card is narrow
+  const areaRef = useRef(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const el = areaRef.current;
+    if (!el) return;
+    const LABEL_ROOM = 330; // radar plus the labels that stick out on both sides
+    const update = () => setScale(Math.min(1, Math.max(0.6, el.clientWidth / LABEL_ROOM)));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // --- THE MATH ENGINE & IDLE ANIMATION ---
   useEffect(() => {
     // 🧠 1. CHECK FOR NEW TELEMETRY TRAITS
@@ -122,7 +136,7 @@ export default function BehaviorOverview() {
           </div>
 
           {/* Radar Chart Area */}
-          <div className="flex-1 flex items-center justify-center relative -mt-2 z-10">
+          <div ref={areaRef} className="flex-1 flex items-center justify-center relative -mt-2 z-10 min-h-0">
             
             {/* THE STANDBY OVERLAY */}
             {isWaiting && (
@@ -133,7 +147,7 @@ export default function BehaviorOverview() {
               </div>
             )}
 
-            <div style={{ width: size, height: size }} className="relative">
+            <div style={{ width: size, height: size, transform: `scale(${scale})` }} className="relative shrink-0">
               <svg width={size} height={size} className="overflow-visible absolute inset-0">
                 
                 {/* Background Grid Circles */}
