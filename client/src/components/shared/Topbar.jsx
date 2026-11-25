@@ -42,13 +42,13 @@ export default function Topbar() {
       {/* FIXED WRAPPER: 
         Added w-full, max-w-[1600px] and mx-auto to perfectly align with the dashboard grid below. 
       */}
-      <div className="animate-topbar-enter w-full max-w-[1600px] mx-auto flex justify-between items-end mb-1 pt-10 relative z-50">
+      <div className="animate-topbar-enter w-full max-w-[1600px] mx-auto flex justify-between items-center md:items-end gap-3 mb-1 pt-4 md:pt-10 relative z-50">
         
         {/* LEFT: Page Title 
             FIXED: Added pl-12 (padding-left) to push it safely past the sidebar arrow 
         */}
-        <div className="pl-12 md:pl-10">
-          <h6 className="text-[32px] font-extrabold tracking-[0.22em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-purple-400 drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]">
+        <div className="pl-4 md:pl-10 min-w-0">
+          <h6 className="text-[17px] sm:text-[22px] lg:text-[32px] font-extrabold tracking-[0.1em] sm:tracking-[0.14em] lg:tracking-[0.22em] uppercase truncate text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-purple-400 drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]">
           Live Analytics
           </h6>
         </div>
@@ -56,10 +56,10 @@ export default function Topbar() {
         {/* RIGHT: Top Right Controls 
             FIXED: Added pr-6 md:pr-10 (padding-right) to pull the elements leftward away from the screen edge
         */}
-        <div className="flex items-center gap-5 pr-6 md:pr-10">
+        <div className="flex items-center gap-3 md:gap-5 pr-4 md:pr-10 shrink-0">
           
           {/* Theme Toggle Icon */}
-          <button className="text-slate-400 hover:text-purple-400 transition-colors duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] hover:rotate-90">
+          <button className="hidden sm:block text-slate-400 hover:text-purple-400 transition-colors duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] hover:rotate-90">
             <Sun size={20} />
           </button>
 
@@ -68,11 +68,11 @@ export default function Topbar() {
             {/* Main Button */}
             <button 
               onClick={() => setIsSessionOpen(!isSessionOpen)}
-              className={`flex items-center gap-3 bg-[#0c0a18] border rounded-xl px-4 py-2 shadow-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+              className={`flex items-center gap-2 md:gap-3 bg-[#0c0a18] border rounded-xl px-2.5 md:px-4 py-2 shadow-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                 isSessionOpen ? 'border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)]' : 'border-slate-700/60 hover:border-purple-500/40'
               }`}
             >
-              <span className="text-[13px] font-bold text-slate-200 tracking-wide">Session 01</span>
+              <span className="hidden sm:inline text-[13px] font-bold text-slate-200 tracking-wide">Session 01</span>
               
               {/* Inner LIVE Badge */}
               <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md px-2 py-0.5">

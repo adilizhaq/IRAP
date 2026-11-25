@@ -66,7 +66,7 @@ function AppContent() {
       <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-[#040308]">
         {!isImmersiveMode && <Topbar sessionData={sessionData} />}
 
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className={`flex-1 overflow-y-auto ${!isImmersiveMode ? 'pb-20 md:pb-0' : ''} [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}>
           
           {currentScreen === 'sandbox' && (
             <SandboxView onSessionComplete={handleSessionComplete} />
