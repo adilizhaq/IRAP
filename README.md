@@ -6,6 +6,16 @@ A small, browser-only simulation of how a feed turns behavior into a profile, an
 
 Everything is simulated in the browser. No real user data is collected or sent anywhere.
 
+## Screenshots
+
+| Welcome | Content Sandbox |
+|---|---|
+| ![Welcome](docs/screenshots/1-welcome.png) | ![Sandbox](docs/screenshots/2-sandbox.png) |
+
+| Dashboard | Recommendations |
+|---|---|
+| ![Dashboard](docs/screenshots/3-dashboard.png) | ![Recommendations](docs/screenshots/4-recommendations.png) |
+
 ## Screens
 
 | Screen | What it does |
@@ -23,6 +33,15 @@ npm run dev
 ```
 
 Build for production with `npm run build`.
+
+## Deploy
+
+It is a static site, so any static host works.
+
+- **Vercel:** import the repo, set **Root Directory** to `client`. Build settings are picked up from `client/vercel.json`.
+- **Netlify:** import the repo. `netlify.toml` already sets the base folder, build command and publish folder.
+
+After deploying, add the live link at the top of this README.
 
 ## Stack
 
