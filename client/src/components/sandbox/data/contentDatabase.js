@@ -579,11 +579,3 @@ export const WEIGHTS = {
   dislike: -10,
   time: 1,
 };
-
-// Background videos.
-export const BACKGROUND_VIDEOS = [
-  '/bg1.mp4',
-  '/bg2.mp4',
-  '/bg3.mp4',
-];
-

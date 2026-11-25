@@ -1,6 +1,9 @@
 import React from 'react';
 
 export default function Sparkline({ path, hex, index }) {
+  // No data yet: an empty path would produce an invalid SVG "d" attribute
+  if (!path || !path.trim().startsWith('M')) return null;
+
   return (
     <div className="absolute bottom-0 left-0 right-0 h-10 translate-y-2 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-40 group-hover:opacity-100 pointer-events-none">
       <svg className="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
