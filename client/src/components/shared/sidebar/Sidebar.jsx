@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import { 
-  LayoutDashboard, Activity, BarChart3, UserCheck, 
-  Sparkles, Sliders, Settings, HelpCircle, ChevronLeft,
-  Smartphone 
-} from "lucide-react";
+import { LayoutDashboard, Sparkles, ChevronLeft, Smartphone } from "lucide-react";
 
 import SidebarLogo from "./SidebarLogo";
 import SidebarNav from "./SidebarNav";
@@ -16,19 +12,10 @@ export default function Sidebar({ currentView, onNavigate, onResetData }) {
   const mainNav = [
     { id: "sandbox", label: "Content Sandbox", icon: <Smartphone size={18} /> },
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
-    { id: "livestream", label: "Live Activity", icon: <Activity size={18} /> },
-    { id: "analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
-    
-    // Future Expansion Links
-    { id: "deepdive", label: "Behavior Profile", icon: <UserCheck size={18} /> },
     { id: "recommendations", label: "Recommendations", icon: <Sparkles size={18} /> },
-    { id: "digital-profile", label: "Digital Profile", icon: <Sliders size={18} /> },
   ];
 
-  const bottomNav = [
-    { id: "settings", label: "Settings", icon: <Settings size={18} /> },
-    { id: "about", label: "About IRAP", icon: <HelpCircle size={18} /> },
-  ];
+  const bottomNav = [];
 
   return (
     <>
